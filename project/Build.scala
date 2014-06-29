@@ -4,7 +4,12 @@ import Keys._
 object FPInScalaBuild extends Build {
   val opts = Project.defaultSettings ++ Seq(
     scalaVersion := "2.10.3",
-    resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/"
+    resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
+    libraryDependencies ++= Seq(
+      "org.scalatest" % "scalatest_2.10" % "2.1.0" % "test",
+      "org.scalaz" %% "scalaz-core" % "7.0.6",
+      "com.chuusai" % "shapeless_2.10.4" % "2.0.0"
+    )
   )
 
   lazy val root =
@@ -12,7 +17,7 @@ object FPInScalaBuild extends Build {
             base = file("."),
             settings = opts ++ Seq(
               onLoadMessage ~= (_ + nio2check())
-            )) aggregate (chapterCode, exercises, answers)
+            )) aggregate (chapterCode, exercises)//, answers)
   lazy val chapterCode =
     Project(id = "chapter-code",
             base = file("chaptercode"),
@@ -21,10 +26,10 @@ object FPInScalaBuild extends Build {
     Project(id = "exercises",
             base = file("exercises"),
             settings = opts)
-  lazy val answers =
-    Project(id = "answers",
-            base = file("answers"),
-            settings = opts)
+  // lazy val answers =
+  //   Project(id = "answers",
+  //           base = file("answers"),
+  //           settings = opts)
 
   def nio2check(): String = {
     val cls = "java.nio.channels.AsynchronousFileChannel"
