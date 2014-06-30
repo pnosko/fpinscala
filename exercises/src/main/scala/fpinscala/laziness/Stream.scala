@@ -88,11 +88,14 @@ trait Stream[+A] {
     Stream.unfold((this, other)) {
       case (Cons(ha, ta), Cons(hb, tb)) =>
         (f(ha(), hb()), (ta(), tb())).some
+      case (Empty, Empty) => none
     }
 
   private def zipAllUnfold[B](s2: Stream[B]): Stream[(Option[A], Option[B])] =
     Stream.unfold((this, s2)) {
       case (Empty, Empty) => None
+      case (Empty, Cons(hb, tb)) => ((none, hb().some), (empty, tb())).some
+      case (Cons(ha, ta), Empty) => ((ha().some, none), (ta(), empty)).some
       case (Cons(ha, ta), Cons(hb, tb)) => ((ha().some, hb().some), (ta(), tb())).some
     }
 
@@ -110,6 +113,9 @@ trait Stream[+A] {
     } concat (Stream(empty))
 
   //private def mapUnfold[B](f: A => B): Stream[B] = Stream.unfold(this)(x => x.uncons.map(s => (f(s.head), s.tail)))
+
+  def hasSubsequence[A](s: Stream[A]): Boolean =
+    tails exists (_ startsWith s)
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]

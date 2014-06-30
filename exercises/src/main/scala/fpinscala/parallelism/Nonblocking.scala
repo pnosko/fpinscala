@@ -130,20 +130,29 @@ object Nonblocking {
           }
       }
 
-    def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] = ???
+    def choiceN[A](p: Par[Int])(ps: List[Par[A]]): Par[A] = es => new Future[A] {
+      def apply(cb: A => Unit): Unit =
+        p(es) { ind => eval(es) { ps(ind)(es)(cb) }}
+    }
 
     def choiceViaChoiceN[A](a: Par[Boolean])(ifTrue: Par[A], ifFalse: Par[A]): Par[A] =
-      ???
+      choiceN(map(a)(b => if (b) 0 else 1))(List(ifTrue, ifFalse))
 
     def choiceMap[K,V](p: Par[K])(ps: Map[K,Par[V]]): Par[V] =
-      ???
+      es => new Future[V] {
+        def apply(cb: V => Unit): Unit =
+          p(es)(k => ps(k)(es)(cb))
+      }
 
-    // see `Nonblocking.scala` answers file. This function is usually called something else!
+    /* `chooser` is usually called `flatMap` or `bind`. */
     def chooser[A,B](p: Par[A])(f: A => Par[B]): Par[B] =
-      ???
+      flatMap(p)(f)
 
     def flatMap[A,B](p: Par[A])(f: A => Par[B]): Par[B] =
-      ???
+      es => new Future[B] {
+        def apply(cb: B => Unit): Unit =
+          p(es)(a => f(a)(es)(cb))
+      }
 
     def choiceViaChooser[A](p: Par[Boolean])(f: Par[A], t: Par[A]): Par[A] =
       ???
@@ -168,6 +177,7 @@ object Nonblocking {
       def map[B](f: A => B): Par[B] = Par.map(p)(f)
       def map2[B,C](b: Par[B])(f: (A,B) => C): Par[C] = Par.map2(p,b)(f)
       def zip[B](b: Par[B]): Par[(A,B)] = p.map2(b)((_,_))
+      def flatMap[B](f: A => Par[B]): Par[B] = Par.flatMap(p)(f)
     }
   }
 }

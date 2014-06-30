@@ -115,7 +115,7 @@ class StreamTest extends FlatSpec with Matchers {
   it should "support tails" in {
     val list = stream.tails.map(_.toList).toList
 
-    list should be (List(List(1,2,3), List(2,3), List(3)))
+    list should be (List(List(1,2,3), List(2,3), List(3), List()))
   }
 
 //  it should "support scan" in {

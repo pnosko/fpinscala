@@ -3,7 +3,9 @@ package fpinscala.datastructures
 
 import org.scalatest._
 import List._
+import org.scalatest.junit.JUnitRunner
 
+//@RunWith(classOf[JUnitRunner])
 class ListTest extends FlatSpec with Matchers {
 	it should "be able to map" in {
 		val list = List(1, 2, 3, 4, 5)
