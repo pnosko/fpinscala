@@ -74,23 +74,23 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
   }
 
   object Laws {
-//    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
-//      forAll(in)(s => run(p1)(s) == run(p2)(s))
+    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
+      forAll(in)(s => run(p1)(s) == run(p2)(s))
 
-//    def mapLaw[A](p: Parser[A])(in: Gen[String]): Prop =
-//      equal(p, p.map(a => a))(in)
-//
-//    def anyCharLaw[A](in: Gen[Char]): Prop =
-//      forAll(in)(c => run(char(c))(c.toString) == Right(c))
-//
-//    def anyStringLaw[A](in: Gen[String]): Prop =
-//      forAll(in)(s => run(string(s))(s) == Right(s))
+    def mapLaw[A](p: Parser[A])(in: Gen[String]): Prop =
+      equal(p, p.map(a => a))(in)
+
+    def anyCharLaw[A](in: Gen[Char]): Prop =
+      forAll(in)(c => run(char(c))(c.toString) == Right(c))
+
+    def anyStringLaw[A](in: Gen[String]): Prop =
+      forAll(in)(s => run(string(s))(s) == Right(s))
 
 //    def successLaw[A](as: Gen[A])(in: Gen[String]): Prop =
 //      forAll(as){a =>
 //        !forAll(in)(s => run(succeed(a))(s) == Right(a)).run().isFalsified
 //      }
-
+//
 //    def productLaw[A](p: Parser[A], cont: Parser[A])(in: Gen[String]): Prop =
 //      forAll(in){s1 =>
 //        forAll(in){s2 =>
