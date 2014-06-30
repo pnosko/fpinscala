@@ -10,7 +10,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   implicit def operators[A](p: Parser[A]) = ParserOps[A](p)
 
-  def or[A](s1: Parser[A], s2: => Parser[A]): Parser[A]
+  def or[A](s1: Parser[A], s2: => Parser[A]): Parser[A] = ???
 
   def listOfN[A](n: Int, p: Parser[A]): Parser[List[A]] =
     if (n <= 0) succeed(Nil)
@@ -22,11 +22,20 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   def many1[A](p: Parser[A]): Parser[List[A]] = map2(p, many(p))(_ :: _)
 
-  def map[A, B](p: Parser[A])(f: A => B): Parser[B] = ???
+  def map[A, B](p: Parser[A])(f: A => B): Parser[B] = flatMap(p)(x => succeed(f(x)))
 
-  def map2[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = map(product(p, p2))(f.tupled)
+  def map2[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = map2Simple(p, p2, f)
 
-  def flatMap[A,B](p: Parser[A])(f: A => Parser[B]): Parser[B] = ???
+  private def map2UsingFlatmap[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = for {
+    a <- p
+    b <- p2
+  } yield f(a,b)
+
+  private def map2Simple[C, B, A](p: Parser[A], p2: => Parser[B], f: (A, B) => C): Parser[C] = {
+    map(product(p, p2))(f.tupled)
+  }
+
+  def flatMap[A, B](p: Parser[A])(f: A => Parser[B]): Parser[B] = ???
 
   def count[A](p: Parser[A]): Parser[Int] = map(slice(many(p)))(_.size)
 
@@ -38,12 +47,15 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   def slice[A](p: Parser[A]): Parser[String] = ???
 
-  def product[A,B](p: Parser[A], p2: => Parser[B]): Parser[(A,B)] = ???
+  def product[A,B](p: Parser[A], p2: => Parser[B]): Parser[(A,B)] = for {
+    a <- p
+    b <- p2
+  } yield ((a, b))
 
   def succeed[A](a: A): Parser[A] = // <-- this is quite dafuq, check later
     string("") map (_ => a)
 
-  def contextSensitive(c: Char): Parser[String] = regex(r"[0-9]").flatMap(x => char(c).listOfN(x.toInt))
+  //def contextSensitive(c: Char): Parser[String] = regex("[0-9]".r).flatMap(x => char(c).listOfN(x.toInt))
 
   implicit def regex(r: Regex): Parser[String] = ???
 
@@ -53,25 +65,26 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
     def many: Parser[List[A]] = self.many(p)
     def many1: Parser[List[A]] = self.many1(p)
     def map[B](f: A => B): Parser[B] = self.map(p)(f)
+    def map2[B, C](p2: Parser[B])(f: (A, B) => C): Parser[C] = self.map2(p, p2)(f)
     def slice: Parser[String] = self.slice(p)
     def product[B](p2: => Parser[B]) = self.product(p, p2)
     def **[B](p2: => Parser[B]) = self.product(p, p2)
-    def flatMap[B](f: A => Parser[B]): Parser[B] = self.flatmap(p)(f)
+    def flatMap[B](f: A => Parser[B]): Parser[B] = self.flatMap(p)(f)
     def listOfN(n: Int): Parser[List[A]] = self.listOfN(n, p)
   }
 
   object Laws {
-    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
-      forAll(in)(s => run(p1)(s) == run(p2)(s))
+//    def equal[A](p1: Parser[A], p2: Parser[A])(in: Gen[String]): Prop =
+//      forAll(in)(s => run(p1)(s) == run(p2)(s))
 
-    def mapLaw[A](p: Parser[A])(in: Gen[String]): Prop =
-      equal(p, p.map(a => a))(in)
-
-    def anyCharLaw[A](in: Gen[Char]): Prop =
-      forAll(in)(c => run(char(c))(c.toString) == Right(c))
-
-    def anyStringLaw[A](in: Gen[String]): Prop =
-      forAll(in)(s => run(string(s))(s) == Right(s))
+//    def mapLaw[A](p: Parser[A])(in: Gen[String]): Prop =
+//      equal(p, p.map(a => a))(in)
+//
+//    def anyCharLaw[A](in: Gen[Char]): Prop =
+//      forAll(in)(c => run(char(c))(c.toString) == Right(c))
+//
+//    def anyStringLaw[A](in: Gen[String]): Prop =
+//      forAll(in)(s => run(string(s))(s) == Right(s))
 
 //    def successLaw[A](as: Gen[A])(in: Gen[String]): Prop =
 //      forAll(as){a =>
