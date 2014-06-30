@@ -116,6 +116,7 @@ object Prop {
     if (p) Passed else Falsified("()", 0)
   }
 
+
   val p2 = check {
     val p = Par.map(Par.unit(1))(_ + 1)
     val p2 = Par.unit(2)
@@ -186,10 +187,19 @@ object Gen {
   def unit[A](a: => A): Gen[A] =
     Gen(State.unit(a))
 
+  val int: Gen[Int] =
+    Gen(State(RNG.int))
+
   val boolean: Gen[Boolean] =
     Gen(State(RNG.boolean))
 
-  def choose(start: Int, stopExclusive: Int): Gen[Int] =
+  val char: Gen[Char] =
+    int map {i: Int => (i % 26 + 65).toChar}
+
+  def string(minLength: Int = 3, maxLength: Int = 10): Gen[String] =
+    char.listOfN(int map (_%(maxLength - minLength) + minLength)) map (_.mkString)
+
+  def choose(start: Int = 0, stopExclusive: Int): Gen[Int] =
     Gen(State(RNG.nonNegativeInt).map(n => start + n % (stopExclusive-start)))
 
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] =

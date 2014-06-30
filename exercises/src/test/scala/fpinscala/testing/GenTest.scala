@@ -40,7 +40,7 @@ class GenTest extends FlatSpec with Matchers {
   it should "generate tuple of ints" in {
     val limit = 3
     val taken = Gen.unit(4)
-    val g1 = Gen.choose(limit)
+    val g1 = Gen.choose(0, limit)
 
     val list = g1.listOfN(Gen.unit(2)).map(l => (l.head, l.tail.head)).listOfN(taken).sample(RNG.seed)._1
     list.toSet.size should be > 1

@@ -80,6 +80,8 @@ trait Stream[+A] {
 
   private def mapFoldRight[B](f: A => B): Stream[B] = foldRight(empty[B])((el, acc) => cons(f(el), acc))
 
+  def zip[B](s2: Stream[B]): Stream[(A, B)] = zipWith(s2)((_, _))
+
   def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] = zipAllUnfold(s2)
 
   def zipWith[B, C](other: Stream[B])(f: (A,B) => C): Stream[C] = zipWithUnfold(other)(f)
