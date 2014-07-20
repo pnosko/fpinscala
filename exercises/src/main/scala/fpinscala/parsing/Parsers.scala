@@ -24,7 +24,7 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   def map[A, B](p: Parser[A])(f: A => B): Parser[B] = flatMap(p)(x => succeed(f(x)))
 
-  def map2[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = map2Simple(p, p2, f)
+  def map2[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = map2UsingFlatmap(p, p2)(f)
 
   private def map2UsingFlatmap[A,B,C](p: Parser[A], p2: => Parser[B])(f: (A,B) => C): Parser[C] = for {
     a <- p
@@ -51,6 +51,14 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
     a <- p
     b <- p2
   } yield ((a, b))
+
+  // error reporting
+
+  def label[A](msg: String)(p: Parser[A]): Parser[A] = ???
+
+  def scope[A](msg: String)(p: Parser[A]): Parser[A] = ???
+
+  def attempt[A](p: Parser[A]): Parser[A] = ???
 
   def succeed[A](a: A): Parser[A] = // <-- this is quite dafuq, check later
     string("") map (_ => a)

@@ -1,20 +1,10 @@
 package fpinscala.testing
 
-import fpinscala.laziness.Stream
 import fpinscala.state._
-import fpinscala.parallelism._
-import fpinscala.parallelism.Par.Par
 import Gen._
 import Prop._
-import java.util.concurrent.{Executors,ExecutorService}
-import scalaz.\/
-import fpinscala.state.RNG.Rand
-
-
 import scalaz._
-import Scalaz._
 import org.scalatest._
-import fpinscala.state.RNG._
 
 class GenTest extends FlatSpec with Matchers {
   it should "support unit" in {
@@ -45,6 +35,5 @@ class GenTest extends FlatSpec with Matchers {
     val list = g1.listOfN(Gen.unit(2)).map(l => (l.head, l.tail.head)).listOfN(taken).sample(RNG.seed)._1
     list.toSet.size should be > 1
   }
-
 }
 
