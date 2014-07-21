@@ -69,13 +69,27 @@ object Monoid {
 
   def concatenate[A](as: List[A], m: Monoid[A]): A = as.foldLeft(m.zero)(m.op)
 
-  def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B = concatenate(as.map(f), m)
+  def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B = foldMapUsingFold(as, m)(f)
 
-  def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B =
-    sys.error("todo")
+  private
+  def foldMapUsingFold[A, B](as: List[A], m: Monoid[B])(f: A => B): B = as.foldLeft(m.zero)((b,a) => m.op(b, f(a)))
 
-  def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
-    sys.error("todo")
+  def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B = foldRightUsingFoldMap(as)(z)(f)
+
+  private
+  def foldRightUsingFoldMap[A, B](as: List[A])(z: B)(f: (A, B) => B): B = foldMap(as, new Monoid[B => B]{
+    def op(a1: B => B, a2: B => B): B => B = a1 andThen a2
+    def zero: B => B = x => x
+  })(f.curried(_))(z)
+
+  def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B = foldMap(as, new Monoid[B => B]{
+    def op(a1: B => B, a2: B => B): B => B = a1 andThen a2
+    def zero: B => B = x => x
+  })(f.curried.flip(_))(z)
+
+  implicit class FuncOps[A, B, C](val f: A => (B => C)) {
+    def flip: B => A => C = b => f(_)(b)
+  }
 
   def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B =
     sys.error("todo")

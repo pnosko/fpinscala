@@ -22,6 +22,20 @@ class MonoidTest extends FlatSpec with Matchers {
     f(1) should be (1)
   }
 
+  it should "support foldRight using foldMap" in {
+    val as = List(1, 2, 3)
+    val m = M.intAddition
+    val sum = M.foldRight(as)(m.zero)(m.op)
+    sum should be (6)
+  }
+
+  it should "support foldLeft using foldMap" in {
+    val as = List(1, 2, 3)
+    val m = M.intAddition
+    val sum = M.foldLeft(as)(m.zero)(m.op)
+    sum should be (6)
+  }
+
   import fpinscala.testing._
   import fpinscala.state.RNG
   val whatever: Int = 30
@@ -30,4 +44,6 @@ class MonoidTest extends FlatSpec with Matchers {
     val m = M.intAddition
     M.monoidLaws(m, gen).run(whatever, whatever, RNG.seed).isFalsified should be (false)
   }
+
+
 }
