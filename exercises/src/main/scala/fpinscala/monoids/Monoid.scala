@@ -128,22 +128,23 @@ object Monoid extends FuncExtension {
   def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = 
     foldMapV(v, par(m))(x => Par.unit(f(x)))
 
-  def log(s: String): String = console.log(s)
+//  def log(s: String): String = console.log(s)
 
   private def wc(s: String): Int = if (s.isEmpty || s.forall(_.isWhitespace)) 0 else 1
-  private def wc(s1: String, s2: String): Int = wc((log(s1 + s2)))
+  private def wc(s1: String, s2: String): Int = wc(s1, s2)
 
   val wcMonoid: Monoid[WC] = new Monoid[WC] {
     def op(a1: WC, a2: WC) = (a1, a2) match {
       case (Stub(a), Stub(b)) => Stub(a + b)
       case (Stub(a), Part(l, c, r)) => Part(a + l, c, r)
       case (Part(l, c, r), Stub(b)) => Part(l, c, r + b)
-      case (Part(l1, c1, r1), Part(l2, c2, r2)) => Part(l1 + l2, c1 + c2 + wc(l1, r2), r1 + r2)
+      case (Part(l1, c1, r1), Part(l2, c2, r2)) => Part(l1, c1 + c2 + wc(l2, r1), r2)
     }
     def zero = Stub("")
   }
 
-  // TODO: FIX!
+  // TODO: FIX!sbt
+
   def count(s: String): Int = {
     foldMapV(s.toIndexedSeq, wcMonoid){ ch =>
       if (ch.isWhitespace)
@@ -225,10 +226,6 @@ object StreamFoldable extends Foldable[Stream] {
   override def foldLeft[A, B](as: Stream[A])(z: B)(f: (B, A) => B) =
     as.foldLeft(z)(f)
 }
-
-//sealed trait Tree[+A]
-//case class Leaf[A](value: A) extends Tree[A]
-//case class Branch[A](left: Tree[A], right: Tree[A]) extends Tree[A]
 
 import fpinscala.datastructures.Tree
 

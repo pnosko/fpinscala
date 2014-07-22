@@ -74,7 +74,7 @@ class MonoidTest extends FlatSpec with Matchers {
   }
 
   val wordGen = Gen.lcString(3, 5)
-  val wordOrEmptyGen = Gen.weighted((wordGen, 0.7), (Gen.unit(""), 0.3))
+  val wordOrEmptyGen = Gen.weighted((wordGen, 0.7), (Gen.unit(" "), 0.3))
   it should "pass monoid laws for WC" in {
     val stubGen = wordGen.map(Stub(_))
     val partGen = for {
