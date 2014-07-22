@@ -49,15 +49,19 @@ class MonoidTest extends FlatSpec with Matchers {
   }
 
   it should "count words" in {
-    M.count("blah blah coem se fa;ohdf ") should be (5)
+    M.count("blah blah coem se faohdf ") should be (5)
   }
 
   it should "count words2" in {
-    M.count("blah blah a adf asdf efae  coem se fa;ohdf ") should be (9)
+    M.count(" blah blah a adf asdf efae  coem se faohdf ") should be (9)
   }
 
   it should "count words3" in {
     M.count("blah blahasdfasdffa;ohdf ") should be (2)
+  }
+
+  it should "count words4" in {
+    M.count("blah blahasdfasdffa;ohdf") should be (2)
   }
 
   import fpinscala.testing._
@@ -72,9 +76,6 @@ class MonoidTest extends FlatSpec with Matchers {
   val wordGen = Gen.lcString(3, 5)
   val wordOrEmptyGen = Gen.weighted((wordGen, 0.7), (Gen.unit(""), 0.3))
   it should "pass monoid laws for WC" in {
-//    val gen =
-//      Gen.boolean.flatMap(if (_) wordGen.map(Stub(_)) else for )
-
     val stubGen = wordGen.map(Stub(_))
     val partGen = for {
       l <- wordOrEmptyGen

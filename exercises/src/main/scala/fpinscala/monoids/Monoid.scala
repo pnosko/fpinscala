@@ -84,9 +84,14 @@ object Monoid extends FuncExtension {
   def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B = foldRightUsingFoldMap(as)(z)(f)
 
   private
-  def foldRightUsingFoldMap[A, B](as: List[A])(z: B)(f: (A, B) => B): B = foldMap(as, endoMonoid[B])(f.curried(_))(z)
+  def foldRightUsingFoldMap[A, B](as: List[A])(z: B)(f: (A, B) => B): B = foldMap(as, dual(endoMonoid[B]))(f.curried(_))(z)
 
   def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B = foldMap(as, endoMonoid[B])(f.curried.flip(_))(z)
+
+  def dual[A](m: Monoid[A]): Monoid[A] = new Monoid[A] {
+    def op(a1: A, a2: A): A = m.op(a2, a1)
+    def zero: A = m.zero
+  }
 
   def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B  =
     if (as.isEmpty)
@@ -123,25 +128,31 @@ object Monoid extends FuncExtension {
   def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = 
     foldMapV(v, par(m))(x => Par.unit(f(x)))
 
+  def log(s: String): String = console.log(s)
+
+  private def wc(s: String): Int = if (s.isEmpty || s.forall(_.isWhitespace)) 0 else 1
+  private def wc(s1: String, s2: String): Int = wc((log(s1 + s2)))
+
   val wcMonoid: Monoid[WC] = new Monoid[WC] {
     def op(a1: WC, a2: WC) = (a1, a2) match {
       case (Stub(a), Stub(b)) => Stub(a + b)
       case (Stub(a), Part(l, c, r)) => Part(a + l, c, r)
       case (Part(l, c, r), Stub(b)) => Part(l, c, r + b)
-      case (Part(l1, c1, r1), Part(l2, c2, r2)) => Part(l1 + l2, c1 + c2, r1 + r2)
+      case (Part(l1, c1, r1), Part(l2, c2, r2)) => Part(l1 + l2, c1 + c2 + wc(l1, r2), r1 + r2)
     }
     def zero = Stub("")
   }
 
+  // TODO: FIX!
   def count(s: String): Int = {
     foldMapV(s.toIndexedSeq, wcMonoid){ ch =>
       if (ch.isWhitespace)
-        Part("", 1, "")
+        Part("", 0, "")
       else
         Stub(ch.toString)
     } match {
-      case Stub(a) => 1
-      case Part(_, c, _) => c
+      case Stub(a) => wc(a)
+      case Part(l, c, r) => c + wc(l, r)
     }
   }
 
