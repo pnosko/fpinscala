@@ -204,7 +204,7 @@ object Gen {
   val char: Gen[Char] =
     int map {i: Int => (i % 26 + 65).toChar}
 
-  def string(minLength: Int = 3, maxLength: Int = 10): Gen[String] =
+  def lcString(minLength: Int = 3, maxLength: Int = 10): Gen[String] =
     char.listOfN(int map (_%(maxLength - minLength) + minLength)) map (_.mkString)
 
   def choose(start: Int = 0, stopExclusive: Int): Gen[Int] =

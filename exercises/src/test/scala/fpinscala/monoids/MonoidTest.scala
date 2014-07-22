@@ -1,5 +1,7 @@
 package fpinscala.monoids
 
+import fpinscala.monoids.Monoid.{Part, Stub}
+
 import scalaz._
 import Scalaz._
 import org.scalatest._
@@ -36,6 +38,16 @@ class MonoidTest extends FlatSpec with Matchers {
     sum should be (6)
   }
 
+  it should "fail ordered on unordered list" in {
+    val as = List(1, 2, 5, 3).toIndexedSeq
+    M.ordered(as) should be (false)
+  }
+
+  it should "succeed ordered on ordered list" in {
+    val as = List(1, 2, 3, 4).toIndexedSeq
+    M.ordered(as) should be (true)
+  }
+
   import fpinscala.testing._
   import fpinscala.state.RNG
   val whatever: Int = 30
@@ -45,5 +57,23 @@ class MonoidTest extends FlatSpec with Matchers {
     M.monoidLaws(m, gen).run(whatever, whatever, RNG.seed).isFalsified should be (false)
   }
 
+  val wordGen = Gen.lcString(3, 5)
+  val wordOrEmptyGen = Gen.weighted((wordGen, 0.7), (Gen.unit(""), 0.3))
+  it should "pass monoid laws for WC" in {
+//    val gen =
+//      Gen.boolean.flatMap(if (_) wordGen.map(Stub(_)) else for )
 
+    val stubGen = wordGen.map(Stub(_))
+    val partGen = for {
+      l <- wordOrEmptyGen
+      c <- Gen.choose(1, 3)
+      r <- wordOrEmptyGen
+    } yield (Part(l, c, r))
+
+    val gen = Gen.boolean.flatMap(if (_) stubGen else partGen)
+    val m = M.wcMonoid
+    M.monoidLaws(m, gen).run(whatever, whatever, RNG.seed).isFalsified should be (false)
+  }
+
+  
 }

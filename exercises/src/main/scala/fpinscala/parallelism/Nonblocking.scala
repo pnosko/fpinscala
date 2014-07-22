@@ -178,6 +178,7 @@ object Nonblocking {
       def map2[B,C](b: Par[B])(f: (A,B) => C): Par[C] = Par.map2(p,b)(f)
       def zip[B](b: Par[B]): Par[(A,B)] = p.map2(b)((_,_))
       def flatMap[B](f: A => Par[B]): Par[B] = Par.flatMap(p)(f)
+      def run(ex: ExecutorService): A = Par.run(ex)(p)
     }
   }
 }
