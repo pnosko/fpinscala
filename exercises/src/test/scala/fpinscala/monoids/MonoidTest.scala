@@ -48,6 +48,18 @@ class MonoidTest extends FlatSpec with Matchers {
     M.ordered(as) should be (true)
   }
 
+  it should "count words" in {
+    M.count("blah blah coem se fa;ohdf ") should be (5)
+  }
+
+  it should "count words2" in {
+    M.count("blah blah a adf asdf efae  coem se fa;ohdf ") should be (9)
+  }
+
+  it should "count words3" in {
+    M.count("blah blahasdfasdffa;ohdf ") should be (2)
+  }
+
   import fpinscala.testing._
   import fpinscala.state.RNG
   val whatever: Int = 30
@@ -75,5 +87,5 @@ class MonoidTest extends FlatSpec with Matchers {
     M.monoidLaws(m, gen).run(whatever, whatever, RNG.seed).isFalsified should be (false)
   }
 
-  
+
 }
