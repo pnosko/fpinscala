@@ -177,7 +177,8 @@ case class Gen[+A](sample: State[RNG,A]) {
   def listOf: SGen[List[A]] = Gen.listOf(this)
   def listOf1: SGen[List[A]] = Gen.listOf1(this)
 
-  def tupled: Gen[(A, A)] = this.map2(this)((_,_))
+  def tupled: Gen[(A, A)] = this.tupled(this)
+  def tupled[B](g: Gen[B]): Gen[(A, B)] = this.map2(g)((_,_))
 
   def tupled3: Gen[(A, A, A)] = for {
     a1 <- this

@@ -6,7 +6,10 @@ import scalaz._
 import Scalaz._
 import org.scalatest._
 import fpinscala.monoids.{Monoid => M}
+import org.junit.runner.RunWith
+import org.scalatest.junit.JUnitRunner
 
+@RunWith(classOf[JUnitRunner])
 class MonoidTest extends FlatSpec with Matchers {
 
   it should "support option monoid" in {
@@ -88,5 +91,9 @@ class MonoidTest extends FlatSpec with Matchers {
     M.monoidLaws(m, gen).run(whatever, whatever, RNG.seed).isFalsified should be (false)
   }
 
-
+  it should "pass monoid laws for sth" in {
+    val gen = Gen.stringN(10).tupled(Gen.choose(1, 50))
+    val m = M.productMonoid(M.stringMonoid, M.intAddition)
+    M.monoidLaws(m, gen).run(whatever, whatever, RNG.seed).isFalsified should be (false)
+  }
 }

@@ -7,6 +7,7 @@ object FPInScalaBuild extends Build {
     resolvers += "Typesafe Repository" at "http://repo.typesafe.com/typesafe/releases/",
     libraryDependencies ++= Seq(
       "org.scalatest" % "scalatest_2.10" % "2.1.0" % "test",
+      "junit" % "junit" % "4.11" % "test",
       "org.scalaz" %% "scalaz-core" % "7.0.6",
       "com.chuusai" % "shapeless_2.10.4" % "2.0.0"
     )
