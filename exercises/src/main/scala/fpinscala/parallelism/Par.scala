@@ -113,6 +113,7 @@ object Par {
   class ParOps[A](p: Par[A]) {
     def map[B](f: A => B): Par[B] = Par.map(p)(f)
     def map2[B,C](b: Par[B])(f: (A,B) => C): Par[C] = Par.map2(p, b)(f)
+    def flatMap[B](f: A => Par[B]): Par[B] = Par.flatMap(p)(f)
   }
 }
 

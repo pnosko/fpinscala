@@ -60,10 +60,8 @@ trait Parsers[Parser[+_]] { self => // so inner classes may call methods of trai
 
   def attempt[A](p: Parser[A]): Parser[A] = ???
 
-  def succeed[A](a: A): Parser[A] = // <-- this is quite dafuq, check later
+  def succeed[A](a: A): Parser[A] =
     string("") map (_ => a)
-
-  //def contextSensitive(c: Char): Parser[String] = regex("[0-9]".r).flatMap(x => char(c).listOfN(x.toInt))
 
   implicit def regex(r: Regex): Parser[String] = ???
 
