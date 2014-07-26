@@ -4,7 +4,7 @@ package monads
 import parsing._
 import testing._
 import parallelism._
-import state._
+import state.{State => SState}
 import parallelism.Par._
 import scalaz._
 import Scalaz._
@@ -76,23 +76,29 @@ object Monad {
 
   val optionMonad: Monad[Option] = new Monad[Option] {
     def unit[A](a: => A): Option[A] = a.some
-    override def flatMap[A,B](ma: Option[A])(f: A => Option[B]): Option[B] =
+    def flatMap[A,B](ma: Option[A])(f: A => Option[B]): Option[B] =
       ma flatMap f
   }
 
   val streamMonad: Monad[Stream] = new Monad[Stream] {
     def unit[A](a: => A): Stream[A] = Stream(a)
-    override def flatMap[A,B](ma: Stream[A])(f: A => Stream[B]): Stream[B] =
+    def flatMap[A,B](ma: Stream[A])(f: A => Stream[B]): Stream[B] =
       ma flatMap f
   }
 
   val listMonad: Monad[List] = new Monad[List] {
     def unit[A](a: => A): List[A] = a :: Nil
-    override def flatMap[A,B](ma: List[A])(f: A => List[B]): List[B] =
+    def flatMap[A,B](ma: List[A])(f: A => List[B]): List[B] =
       ma flatMap f
   }
 
-  def stateMonad[S] = ???
+  type S = ({type λ[α] = SState[Nothing, α]})#λ
+
+  def stateMonad[S] = new Monad[S] {
+    def unit[A](a: => A): S[A] = S.unit(a)
+    override def flatMap[A,B](ma: S[A])(f: A => S[B]): S[B] =
+      ma flatMap f
+  }
 
   val idMonad: Monad[Id] = ???
 
