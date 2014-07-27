@@ -4,7 +4,7 @@ package fpinscala.errorhandling
 import scala.{Option => _, Either => _, _} // hide std library `Option` and `Either`, since we are writing our own in this chapter
 
 sealed trait Option[+A] {
-  def map[B](f: A => B): Option[B] = this flatMap{Some(f(_))}
+  def map[B](f: A => B): Option[B] = this.flatMap{x => Some(f(x))}
 
   def getOrElse[B>:A](default: => B): B = this match {
     case Some(a) => a
@@ -32,6 +32,12 @@ case class Some[+A](get: A) extends Option[A]
 case object None extends Option[Nothing]
 
 object Option {
+  implicit class OptionOps[+A](obj: A) {
+    def toOption: Option[A] = obj match {
+      case null => None
+      case a => Some(a)
+    }
+  }
   def failingFn(i: Int): Int = {
     val y: Int = throw new Exception("fail!") // `val y: Int = ...` declares `y` as having type `Int`, and sets it equal to the right hand side of the `=`.
     try {
@@ -59,7 +65,7 @@ object Option {
     bb <- b
   } yield f(aa, bb)
 
-  def sequence[A](a: List[Option[A]]): Option[List[A]] = a.foldLeft(List[A]())((lst, o) => o.fold(lst, _ :: lst)).some.filter(!_.isEmpty)
+  def sequence[A](a: List[Option[A]]): Option[List[A]] = a.foldLeft(List[A]())((lst, o) => o.fold(lst)(_ :: lst)).toOption.filter(!_.isEmpty)
 
   def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sys.error("todo")
 }
