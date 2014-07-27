@@ -4,10 +4,10 @@ package monads
 import parsing._
 import testing._
 import parallelism._
-import state.{State => SState}
+import state._
 import parallelism.Par._
-import scalaz._
-import Scalaz._
+//import scalaz.{State => _, Id => _}
+//import scalaz.Scalaz._
 
 trait Functor[F[_]] {
   def map[A,B](fa: F[A])(f: A => B): F[B]
@@ -36,11 +36,11 @@ trait Monad[M[_]] extends Functor[M] {
   def map2[A,B,C](ma: M[A], mb: M[B])(f: (A, B) => C): M[C] =
     flatMap(ma)(a => map(mb)(b => f(a, b)))
 
-  def sequence[A](lma: List[M[A]]): M[List[A]] = ???
+  def sequence[A](lma: List[M[A]]): M[List[A]] = traverse(lma)(x => x)
 
-  def traverse[A,B](la: List[A])(f: A => M[B]): M[List[B]] = ???
+  def traverse[A,B](la: List[A])(f: A => M[B]): M[List[B]] = la.foldLeft(unit(List[B]()))((lst, a) => map2(f(a),lst){_ :: _})
 
-  def replicateM[A](n: Int, ma: M[A]): M[List[A]] = ???
+  def replicateM[A](n: Int, ma: M[A]): M[List[A]] = sequence(List.fill(n)(ma))
 
   def compose[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = ???
 
@@ -56,6 +56,8 @@ trait Monad[M[_]] extends Functor[M] {
 case class Reader[R, A](run: R => A)
 
 object Monad {
+  def id[A](a: A): A = a
+
   val genMonad = new Monad[Gen] {
     def unit[A](a: => A): Gen[A] = Gen.unit(a)
     override def flatMap[A,B](ma: Gen[A])(f: A => Gen[B]): Gen[B] =
@@ -75,7 +77,7 @@ object Monad {
   }
 
   val optionMonad: Monad[Option] = new Monad[Option] {
-    def unit[A](a: => A): Option[A] = a.some
+    def unit[A](a: => A): Option[A] = Some(a)
     def flatMap[A,B](ma: Option[A])(f: A => Option[B]): Option[B] =
       ma flatMap f
   }
@@ -92,15 +94,17 @@ object Monad {
       ma flatMap f
   }
 
-  type S = ({type λ[α] = SState[Nothing, α]})#λ
-
-  def stateMonad[S] = new Monad[S] {
-    def unit[A](a: => A): S[A] = S.unit(a)
-    override def flatMap[A,B](ma: S[A])(f: A => S[B]): S[B] =
+  def stateMonad[S] = new Monad[({type X[a]=State[S,a]})#X] {
+    def unit[A](a: => A): State[S, A] = State.unit(a)
+    override def flatMap[A,B](ma: State[S, A])(f: A => State[S, B]): State[S, B] =
       ma flatMap f
   }
 
-  val idMonad: Monad[Id] = ???
+  val idMonad: Monad[Id] = new Monad[Id] {
+    def unit[A](a: => A): Id[A] = Id(a)
+    def flatMap[A,B](ma: Id[A])(f: A => Id[B]): Id[B] =
+      f(ma.value)
+  }
 
   def readerMonad[R] = ???
 }
