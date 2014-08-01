@@ -87,6 +87,10 @@ object State {
 
   def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = fs.foldRight(unit[S, List[A]](Nil))((elem, acc) => elem.map2(acc){_ :: _})
 
+//  def get[S]: State[S, S] = State(s => (s, s))
+
+//  def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = {
     def next(m: Machine, in: Input): Machine = (m, in) match {
       case (Machine(_, 0, _), _) => m
