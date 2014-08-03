@@ -9,20 +9,23 @@ import monoids._
 
 trait Applicative[F[_]] extends Functor[F] {
 
-  def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = ???
+  def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = apply(apply(unit(f.curried))(fa))(fb)
+
+  def map3[A,B,C,D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B,C) => D): F[D] = apply(apply(apply(unit(f.curried))(fa))(fb))(fc)
 
   def apply[A,B](fab: F[A => B])(fa: F[A]): F[B] = ???
 
+  private def applyUsingMap2[A,B](fab: F[A => B])(fa: F[A]): F[B] = map2(fab, fa)(_(_))
+
   def unit[A](a: => A): F[A]
 
-  def map[A,B](fa: F[A])(f: A => B): F[B] =
-    apply(unit(f))(fa)
+  def map[A,B](fa: F[A])(f: A => B): F[B] = apply(unit(f))(fa)
 
   def sequence[A](fas: List[F[A]]): F[List[A]] = traverse(fas)(x => x)
 
   def traverse[A,B](as: List[A])(f: A => F[B]): F[List[B]] = as.foldLeft(unit(List[B]()))((lst, a) => map2(f(a),lst){_ :: _})
 
-  def replicateM[A](n: Int, fa: F[A]): F[List[A]] = sequence(List.fill(n)(ma))
+  def replicateM[A](n: Int, fa: F[A]): F[List[A]] = sequence(List.fill(n)(fa))
 
   def factor[A,B](fa: F[A], fb: F[A]): F[(A,B)] = ???
 
