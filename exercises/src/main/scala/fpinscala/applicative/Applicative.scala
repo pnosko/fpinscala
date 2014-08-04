@@ -66,7 +66,12 @@ object Monad {
     Monad[({type f[x] = F[N[x]]})#f] = ???
 }
 
-sealed trait Validation[+E, +A]
+sealed trait Validation[+E, +A] {
+  def errors: Vector[E] = this match {
+    case Success(a) => Vector.empty[E]
+    case Failure(h, t) => h +: t
+  }
+}
 
 case class Failure[E](head: E, tail: Vector[E])
   extends Validation[E, Nothing]

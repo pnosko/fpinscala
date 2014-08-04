@@ -15,4 +15,11 @@ class ApplicativeTest extends FlatSpec with Matchers {
     val res = Applicative.streamApplicative.sequence(a)
     println(res.toList)
   }
+
+  it should "aggregate validation errors" in {
+    val a = Failure("a head", Vector("a tail"))
+    val b = Failure("b head", Vector("b tail"))
+
+    Applicative.validationApplicative.map2(a, b)(List(_, _)).errors.toList should be (List("a head", "a tail", "b head", "b tail"))
+  }
 }
