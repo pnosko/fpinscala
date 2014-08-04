@@ -51,7 +51,10 @@ trait Monad[F[_]] extends Applicative[F] {
 }
 
 object Monad {
-  def eitherMonad[E]: Monad[({type f[x] = Either[E, x]})#f] = ???
+  def eitherMonad[E]: Monad[({type f[x] = Either[E, x]})#f] = new Monad[({type f[x] = Either[E, x]})#f] {
+    def unit[A](a: => A): Either[E, A] = Right(a)
+    override def flatMap[A,B](ma: Either[E, A])(f: A => Either[E, B]): Either[E, B] = ma.right.flatMap(f)
+  }
 
   def stateMonad[S] = new Monad[({type f[x] = State[S, x]})#f] {
     def unit[A](a: => A): State[S, A] = State(s => (a, s))
@@ -83,7 +86,16 @@ object Applicative {
       a zip b map f.tupled
   }
 
-  def validationApplicative[E]: Applicative[({type f[x] = Validation[E,x]})#f] = ???
+  def validationApplicative[E]: Applicative[({type f[x] = Validation[E,x]})#f] =
+    new Applicative[({type f[x] = Validation[E,x]})#f] {
+      def unit[A](a: => A): Validation[E, A] = Success(a)
+      override def map2[A,B,C](a: Validation[E, A], b: Validation[E, B])(f: (A, B) => C): Validation[E, C] = (a, b) match {
+        case (Success(aa), Success(bb)) => Success(f(aa, bb))
+        case (Success(_), bb@Failure(_, _)) => bb
+        case (aa@Failure(_, _), Success(_)) => aa
+        case (Failure(ah, at), Failure(bh, bt)) => Failure(ah,  at ++ (bh +: bt))
+      }
+    }
 
   type Const[A, B] = A
 
