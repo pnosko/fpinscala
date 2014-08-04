@@ -2,12 +2,12 @@ package fpinscala
 package applicative
 
 import monads.Functor
-import state._
+import fpinscala.state._
 import State._
 import StateUtil._ // defined at bottom of this file
 import monoids._
 
-trait Applicative[F[_]] extends Functor[F] {
+trait Applicative[F[_]] extends Functor[F] { self =>
 
   def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = apply(apply(unit(f.curried))(fa))(fb)
 
@@ -29,7 +29,14 @@ trait Applicative[F[_]] extends Functor[F] {
 
   def factor[A,B](fa: F[A], fb: F[A]): F[(A,B)] = ???
 
-  def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = ???
+  def product[G[_]](G: Applicative[G]): Applicative[({type f[x] = (F[x], G[x])})#f] = new Applicative[({type f[x] = (F[x], G[x])})#f] {
+    def unit[A](a: => A): (F[A], G[A]) = (self.unit(a), G.unit(a))
+    override def map2[A,B,C](fa: (F[A], G[A]), fb: (F[B], G[B]))(f: (A, B) => C): (F[C], G[C]) = fa.bimap(self.map2(_,fb._1)(f), G.map2(_,fb._2)(f))
+  }
+
+  implicit class BifunctorTuple[+A,+B](value: (A,B)) {
+    def bimap[C,D](f: A => C, g: B => D): (C,D) = value match { case (aa, bb) => (f(aa), g(bb))}
+  }
 
   def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] = ???
 
