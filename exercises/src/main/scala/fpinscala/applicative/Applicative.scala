@@ -38,7 +38,10 @@ trait Applicative[F[_]] extends Functor[F] { self =>
     def bimap[C,D](f: A => C, g: B => D): (C,D) = value match { case (aa, bb) => (f(aa), g(bb))}
   }
 
-  def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] = ???
+  def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] = new Applicative[({type f[x] = F[G[x]]})#f] {
+    def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
+    override def map2[A,B,C](fa: F[G[A]], fb: F[G[B]])(f: (A, B) => C): F[G[C]] = self.apply(self.apply(unit(f.curried)()))
+  }
 
   def sequenceMap[K,V](ofa: Map[K,F[V]]): F[Map[K,V]] = ???
 }
