@@ -43,7 +43,12 @@ trait Monad[M[_]] extends Functor[M] {
   def replicateM[A](n: Int, ma: M[A]): M[List[A]] = sequence(List.fill(n)(ma))
 
   def filterM[A](ms: List[A])(f: A => M[Boolean]): M[List[A]] = ms.foldLeft(unit(List[A]())){(lst, a) =>
-    flatMap(f(a))(b => if (b) map(lst)(a::_) else lst)
+    flatMap(f(a)){b =>
+      if (b)
+        map(lst)(a :: _)
+      else
+        lst
+    }
   }
 
   def compose[A,B,C](f: A => M[B], g: B => M[C]): A => M[C] = a => flatMap(f(a))(g)
