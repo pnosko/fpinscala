@@ -4,8 +4,7 @@ package fpinscala.monads
 import scalaz._
 import Scalaz._
 import org.scalatest._
-import fpinscala.monoids.{Monoid => M}
-import fpinscala.state.{State => S}
+import fpinscala.monads.{Monad => M}
 import org.junit.runner.RunWith
 import org.scalatest.junit.JUnitRunner
 
@@ -15,7 +14,7 @@ class MonadTest extends FlatSpec with Matchers {
   it should "sequence list of lists" in {
     val l = List(1, 2)
 
-    M.replicateM(2, l) should be (List(List(1,2),List(1,2)))
+    M.listMonad.replicateM(2, l) should be (List(List(1,2), List(1,2)))
   }
 //  it should "do sth with the state" in {
 //    val s = S.unit(25)

@@ -37,6 +37,9 @@ object Option {
       case null => None
       case a => Some(a)
     }
+
+    def some: Option[A] = Some(obj)
+    def none: Option[A] = None
   }
   def failingFn(i: Int): Int = {
     val y: Int = throw new Exception("fail!") // `val y: Int = ...` declares `y` as having type `Int`, and sets it equal to the right hand side of the `=`.
@@ -67,5 +70,5 @@ object Option {
 
   def sequence[A](a: List[Option[A]]): Option[List[A]] = a.foldLeft(List[A]())((lst, o) => o.fold(lst)(_ :: lst)).toOption.filter(!_.isEmpty)
 
-  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = sys.error("todo")
+  def traverse[A, B](a: List[A])(f: A => Option[B]): Option[List[B]] = a.foldLeft(List[B]().some)((acc, v) => map2(f(v), acc)(_ :: _))
 }
