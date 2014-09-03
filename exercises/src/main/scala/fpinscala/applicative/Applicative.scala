@@ -185,9 +185,9 @@ object Traverse {
     override def traverse[G[_],A,B](oa: Option[A])(f: A => G[B])(implicit G: Applicative[G]): G[Option[B]] = oa.fold(G.unit(none[B]))((a:A) => G.map(f(a))(Some(_)))
   }
 
-//  val treeTraverse = new Traverse[Option] {
-//    override def traverse[G[_],A,B](oa: Option[A])(f: A => G[B])(implicit G: Applicative[G]): G[Option[B]] = oa.fold(G.unit(none[B]))((a:A) => G.map(f(a))(Some(_)))
-//  }
+  val treeTraverse = new Traverse[Tree] {
+    override def traverse[G[_],A,B](ta: Tree[A])(f: A => G[B])(implicit G: Applicative[G]): G[Tree[B]] = ???
+  }
 }
 
 // The `get` and `set` functions on `State` are used above,
