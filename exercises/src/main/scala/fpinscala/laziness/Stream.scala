@@ -82,6 +82,7 @@ trait Stream[+A] {
 
   def zip[B](s2: Stream[B]): Stream[(A, B)] = zipWith(s2)((_, _))
 
+<<<<<<< HEAD
   def zipAll[B](s2: Stream[B]): Stream[(Option[A],Option[B])] = zipAllUnfold(s2)
 
   def zipWith[B, C](other: Stream[B])(f: (A,B) => C): Stream[C] = zipWithUnfold(other)(f)
@@ -118,6 +119,9 @@ trait Stream[+A] {
 
   def hasSubsequence[A](s: Stream[A]): Boolean =
     tails exists (_ startsWith s)
+=======
+  def startsWith[B](s: Stream[B]): Boolean = sys.error("todo")
+>>>>>>> upstream/master
 }
 case object Empty extends Stream[Nothing]
 case class Cons[+A](h: () => A, t: () => Stream[A]) extends Stream[A]
