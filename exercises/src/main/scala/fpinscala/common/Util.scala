@@ -6,4 +6,8 @@ object Util {
   implicit class BifunctorTuple[+A,+B](value: (A,B)) {
     def bimap[C,D](f: A => C, g: B => D): (C,D) = value match { case (aa, bb) => (f(aa), g(bb))}
   }
+
+  def none[A]: Option[A] = None
+
+  def nil[A]: List[A] = Nil
 }

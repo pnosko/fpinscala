@@ -24,14 +24,14 @@ class ApplicativeTest extends FlatSpec with Matchers {
     A.validationApplicative.map2(a, b)(List(_, _)).errors.toList should be (List("a head", "a tail", "b head", "b tail"))
   }
 
-  it should "sequence over a map" in {
-    val m = Map("a" -> 2.some, "b" -> 3.some)
-
-    val ap: Applicative[({type M[F[_]] = Map[String, F[_]]})#M] = new Applicative[({type M[F[x]] = Map[String, F[_]]})#M] {
-      override def unit[A](a: => A): Map[String, A] = Map[String, A]()
-      override def map2[A,B,C](fa: Map[String, A], fb: Map[String, B])(f: (A, B) => C): Map[String,C] = ???
-    }
-
-    ap.sequenceMap(m)
-  }
+//  it should "sequence over a map" in {
+//    val m = Map("a" -> 2.some, "b" -> 3.some)
+//
+//    val ap: Applicative[({type M[F[_]] = Map[String, F[_]]})#M] = new Applicative[({type M[F[x]] = Map[String, F[_]]})#M] {
+//      override def unit[A](a: => A): Map[String, A] = Map[String, A]()
+//      override def map2[A,B,C](fa: Map[String, A], fb: Map[String, B])(f: (A, B) => C): Map[String,C] = ???
+//    }
+//
+//    ap.sequenceMap(m)
+//  }
 }
