@@ -27,9 +27,10 @@ class ApplicativeTest extends FlatSpec with Matchers {
   it should "sequence over a map" in {
     val m = Map("a" -> 2.some, "b" -> 3.some)
 
-    val ap: Applicative[({type X = Map[String, _]})#X] = A(new Functor[({type X = Map[String, _]})#X] {
+    val ap: Applicative[({type M[F[_]] = Map[String, F[_]]})#M] = new Applicative[({type M[F[x]] = Map[String, F[_]]})#M] {
       override def unit[A](a: => A): Map[String, A] = Map[String, A]()
-    })
+      override def map2[A,B,C](fa: Map[String, A], fb: Map[String, B])(f: (A, B) => C): Map[String,C] = ???
+    }
 
     ap.sequenceMap(m)
   }

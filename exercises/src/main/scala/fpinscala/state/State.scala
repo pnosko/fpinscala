@@ -84,8 +84,6 @@ case class Machine(locked: Boolean, candies: Int, coins: Int)
 
 object State {
   type Rand[A] = State[RNG, A]
-<<<<<<< HEAD
-
   def unit[S, A](a: A): State[S, A] = State((a, _))
 
   def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] = fs.foldRight(unit[S, List[A]](Nil))((elem, acc) => elem.map2(acc){_ :: _})
@@ -108,7 +106,3 @@ object State {
     }
   }
 }
-=======
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = ???
-}
->>>>>>> upstream/master

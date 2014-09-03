@@ -9,13 +9,17 @@ import monoids._
 
 trait Applicative[F[_]] extends Functor[F] { self =>
 
-  def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = apply(apply(unit(f.curried))(fa))(fb)
+  def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = map2Apply(fa, fb)(f)
 
-  def map3[A,B,C,D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B,C) => D): F[D] = apply(apply(apply(unit(f.curried))(fa))(fb))(fc)
+  private def map2Apply[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = apply(apply(unit(f.curried))(fa))(fb)
 
-  def apply[A,B](fab: F[A => B])(fa: F[A]): F[B] = ???
+  def map3[A,B,C,D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B,C) => D): F[D] = map3Apply(fa, fb, fc)(f)
 
-  private def applyUsingMap2[A,B](fab: F[A => B])(fa: F[A]): F[B] = map2(fab, fa)(_(_))
+  private def map3Apply[A,B,C,D](fa: F[A], fb: F[B], fc: F[C])(f: (A, B,C) => D): F[D] = apply(apply(apply(unit(f.curried))(fa))(fb))(fc)
+
+  def apply[A,B](fab: F[A => B])(fa: F[A]): F[B] = applyWithMap2(fab)(fa)
+
+  private def applyWithMap2[A,B](fab: F[A => B])(fa: F[A]): F[B] = map2(fab, fa)(_(_))
 
   def unit[A](a: => A): F[A]
 
@@ -39,7 +43,9 @@ trait Applicative[F[_]] extends Functor[F] { self =>
     override def map2[A,B,C](fa: F[G[A]], fb: F[G[B]])(f: (A, B) => C): F[G[C]] = self.map2(fa, fb)(G.map2(_,_)(f))
   }
 
-  def sequenceMap[K,V](ofa: Map[K,F[V]]): F[Map[K,V]] = ofa.foldLeft(unit(Map[K,V]())){ case (fm,(k, fv)) => self.map2(fm, fv)((m, v) => m + (k -> v))}
+  def sequenceMap[K,V](ofa: Map[K,F[V]]): F[Map[K,V]] = ofa.foldLeft(unit(Map[K,V]())) { case (fm,(k, fv)) =>
+    self.map2(fm, fv)((m, v) => m + (k -> v))
+  }
 }
 
 case class Tree[+A](head: A, tail: List[Tree[A]])
@@ -87,10 +93,10 @@ case class Success[A](a: A) extends Validation[Nothing, A]
 
 object Applicative {
 
-  def apply[F[_]: Functor, X](ftor: F[X], u: X => F[X])(implicit ) = new Applicative[F] {
-    override def unit[A](a: => A): F[A] = u(a)
-    override def apply[A,B](fab: F[A => B])(fa: F[A]): F[B] = ???
-  }
+//  def apply[F[_]: Functor, X](ftor: F[X], u: X => F[X])(implicit ) = new Applicative[F] {
+//    override def unit[A](a: => A): F[A] = u(a)
+//    override def apply[A,B](fab: F[A => B])(fa: F[A]): F[B] = ???
+//  }
 
   val streamApplicative = new Applicative[Stream] {
 
@@ -115,11 +121,11 @@ object Applicative {
 
   type Const[A, B] = A
 
-//  implicit def monoidApplicative[M](M: Monoid[M]) =
-//    new Applicative[({ type f[x] = Const[M, x] })#f] {
-//      def unit[A](a: => A): M = M.zero
-//      override def apply[A,B](m1: M)(m2: M): M = M.op(m1, m2)
-//  }
+  implicit def monoidApplicative[M](M: Monoid[M]) =
+    new Applicative[({ type f[x] = Const[M, x] })#f] {
+      def unit[A](a: => A): M = M.zero
+      override def apply[A,B](m1: M)(m2: M): M = M.op(m1, m2)
+  }
 }
 
 trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
@@ -171,7 +177,7 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
 
 object Traverse {
   val listTraverse = new Traverse[List] {
-    override def traverse[G[_],A,B](fa: List[A])(f: A => G[B])(implicit G: Applicative[G]): G[List[B]] = ???
+    override def traverse[G[_],A,B](fa: List[A])(f: A => G[B])(implicit G: Applicative[G]): G[List[B]] = fa.foldLeft(G.unit(List[B]()))((b, a) => G.map2(f(a),b)(_::_))
   }
 
   val optionTraverse = new Traverse[Option] {
