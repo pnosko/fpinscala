@@ -167,10 +167,11 @@ trait Traverse[F[_]] extends Functor[F] with Foldable[F] { self =>
 
   def reverse[A](fa: F[A]): F[A] =  ??? //mapAccum(fa, unit[A])((a, s) => ((), a :: s))._2
 
-  override def foldLeft[A,B](fa: F[A])(z: B)(f: (B, A) => B): B = mapAccum(fa, z)((a, b) => ((), f(b, a)))._2.reverse   // TODO: test if shold be reversed
+  override def foldLeft[A,B](fa: F[A])(z: B)(f: (B, A) => B): B = mapAccum(fa, z)((a, b) => ((), f(b, a)))._2   // TODO: test if shold be reversed
 
   def fuse[G[_],H[_],A,B](fa: F[A])(f: A => G[B], g: A => H[B])
-                         (implicit G: Applicative[G], H: Applicative[H]): (G[F[B]], H[F[B]]) = ???
+                         (implicit G: Applicative[G], H: Applicative[H]): (G[F[B]], H[F[B]]) =
+    traverse[({type f[x] = (G[x], H[x])})#f, A, B](fa)(a => (f(a),g(a)))(G.product(H))    // TODO: see how the passing of the Applicative instance works (what's the return type of traverse here??)
 
   def compose[G[_]](implicit G: Traverse[G]): Traverse[({type f[x] = F[G[x]]})#f] = ???
 }
@@ -184,7 +185,9 @@ object Traverse {
     override def traverse[G[_],A,B](oa: Option[A])(f: A => G[B])(implicit G: Applicative[G]): G[Option[B]] = oa.fold(G.unit(none[B]))((a:A) => G.map(f(a))(Some(_)))
   }
 
-  val treeTraverse = ???
+//  val treeTraverse = new Traverse[Option] {
+//    override def traverse[G[_],A,B](oa: Option[A])(f: A => G[B])(implicit G: Applicative[G]): G[Option[B]] = oa.fold(G.unit(none[B]))((a:A) => G.map(f(a))(Some(_)))
+//  }
 }
 
 // The `get` and `set` functions on `State` are used above,
